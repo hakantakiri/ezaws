@@ -1,0 +1,60 @@
+#!/usr/bin/python3 
+# Easy to use command line wrapper for "aws-cli"
+
+import argparse
+
+DESCRIPTION = "Easy to use comman line wrapper for 'aws-cli'" 
+PROG = "ezaws"
+SERVICES = ['lambda', 'apigatway']
+
+SERVICE_HELP = "AWS Service like 'lambda'"
+
+LAMBDA_HELP = "Lambda service"
+LAMBDA_COMMAND_HELP = "Lambda commands"
+LAMBDA_CHOICES = ["list-functions", "get-function", "list-layers"]
+LAMBDA_ALIASES= ["la", "function"]
+
+API_HELP = "Api Gateway service"
+API_COMMAND_HELP = "Api gateway commands"
+API_CHOICES = ["get-models"]
+
+
+PROFILE_HELP = "AWS profile"
+
+def buildParser():
+    
+    # Build Root options
+    parser = argparse.ArgumentParser(description= DESCRIPTION, prog=PROG)
+    subparsers = parser.add_subparsers(help="AWS service name like 'lambda'", dest="option")
+
+    buildLambdaParser( subparsers )
+
+    # Create the parser for the "apigateway" command service
+    buildApiParser( subparsers )
+
+    # Adding optional arguments
+    
+    args = parser.parse_args()
+    
+    return args
+
+def buildLambdaParser( subparsers ):
+    # Create the parser for the "lambda" command service
+    parser_lambda = subparsers.add_parser("lambda", help=LAMBDA_HELP)
+    parser_lambda.add_argument("command", help=LAMBDA_COMMAND_HELP, type=str, choices = LAMBDA_CHOICES)
+    parser_lambda.add_argument("--profile", help=PROFILE_HELP, type=str)
+
+def buildApiParser( subparsers ):
+     # Create the parser for the "apigateway" command service
+    parser_api = subparsers.add_parser("apigateway", aliases=["api"], help=API_HELP)
+    parser_api.add_argument("command", help=API_COMMAND_HELP, type=str, choices = API_CHOICES)
+
+def main():
+
+    args = buildParser()
+    print('args:')
+    print(args)
+
+
+if __name__ == '__main__':
+    main()
