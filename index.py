@@ -20,8 +20,8 @@ option_lambda = LambdaOption()
 option_apigateway = ApigatewayOption()
 
 options = [
-            option_lambda,
-            option_apigateway
+            option_lambda
+            #option_apigateway
         ]
 
 # Building functions
@@ -42,11 +42,19 @@ def check_aliases_collisions():
 def build_parser() :
     
     parser = argparse.ArgumentParser(description = DESCRIPTION)
-    subparsers = parser.add_subparsers( help = SUB_HELP, dest = SUB_DEST)
 
-    for option in options :
-        option.build_subparser( subparsers )    
+    parser.add_argument("command", action = 'store', help = 'command: AWS Service', metavar = 'COMMAND')
+    subparsers = parser.add_subparsers(help = "subcommand: Commands specific for given AWS Service", dest='subcommand', metavar = 'SUBCOMMAND', required = True)
 
+    subparser_get_function =  subparsers.add_parser('get-function', help = "To download code in zip file")
+    subparser_get_function.add_argument('--function-name', type=str, required = True, dest = 'function_name')
+
+
+    # subparsers = parser.add_subparsers( help = SUB_HELP, dest = SUB_DEST)
+    
+    # for option in options :
+    #     option.build_subparser( subparsers )    
+        
     args = parser.parse_args()
     
     return args
@@ -64,7 +72,7 @@ def main():
     check_aliases_collisions ()
     args = build_parser()
     print(args )
-    execute_option( args )
+    # execute_option( args )
 
 
 

@@ -1,59 +1,81 @@
-#!/usr/bin/python3 
-# Easy to use command line wrapper for "aws-cli"
+#! /usr/bin/python3
 
+# Importing packages
 import argparse
 
-DESCRIPTION = "Easy to use comman line wrapper for 'aws-cli'" 
-PROG = "ezaws"
-SERVICES = ['lambda', 'apigatway']
+# Importing settings
+import settings
 
-SERVICE_HELP = "AWS Service like 'lambda'"
+# Importing options
+from options.aws_lambda.main import LambdaOption
+from options.aws_apigateway.main import ApigatewayOption
 
-LAMBDA_HELP = "Lambda service"
-LAMBDA_COMMAND_HELP = "Lambda commands"
-LAMBDA_CHOICES = ["list-functions", "get-function", "list-layers"]
-LAMBDA_ALIASES= ["la", "function"]
+option_lambda = LambdaOption()
+option_apigateway = ApigatewayOption()
 
-API_HELP = "Api Gateway service"
-API_COMMAND_HELP = "Api gateway commands"
-API_CHOICES = ["get-models"]
+options = [
+            option_lambda,
+            option_apigateway
+        ]
 
+# Declaring global variables
+DESCRIPTION = settings.DESCRIPTION
+PROG = settings.PROG
+SUB_HELP = settings.SUB_HELP
+SUB_DEST = settings.SUB_DEST
 
-PROFILE_HELP = "AWS profile"
+# Building functions
+def check_aliases_collisions():
+    control_options = []
+    flag = True
+    for option in options:
+        for alias in option.get_cli_aliases():
+            if alias in control_options:
+                flag = False
+                print("Error: There is a collition, '{}' alias is found in two options".format(alias))
+                exit()
+            else :
+                control_options.append(alias)
 
-def buildParser():
+    return flag
+
+def build_parser() :
     
-    # Build Root options
-    parser = argparse.ArgumentParser(description= DESCRIPTION, prog=PROG)
-    subparsers = parser.add_subparsers(help="AWS service name like 'lambda'", dest="option")
+    parser = argparse.ArgumentParser(description = DESCRIPTION)
 
-    buildLambdaParser( subparsers )
+    parser.add_argument("command", help = 'command: AWS Service', metavar = 'COMMAND', choices = ['lambda', 'apigateway'])
+    subparsers = parser.add_subparsers(help = "subcommand: Commands specific for given AWS Service", dest='subcommand', metavar = 'SUBCOMMAND')
 
-    # Create the parser for the "apigateway" command service
-    buildApiParser( subparsers )
 
-    # Adding optional arguments
+
+    for option in options :
+        option.build_subparser( subparsers )
+
+    # subparsers = parser.add_subparsers( help = SUB_HELP, dest = SUB_DEST)
     
+    # for option in options :
+    #     option.build_subparser( subparsers )    
+        
     args = parser.parse_args()
     
     return args
 
-def buildLambdaParser( subparsers ):
-    # Create the parser for the "lambda" command service
-    parser_lambda = subparsers.add_parser("lambda", help=LAMBDA_HELP)
-    parser_lambda.add_argument("command", help=LAMBDA_COMMAND_HELP, type=str, choices = LAMBDA_CHOICES)
-    parser_lambda.add_argument("--profile", help=PROFILE_HELP, type=str)
+def execute_option( args ): 
+    
+    for option in options:
+        if args.option == option.get_option_name() or args.option in option.get_cli_aliases() :
+            option.execute_command( args.command, args)
+    
 
-def buildApiParser( subparsers ):
-     # Create the parser for the "apigateway" command service
-    parser_api = subparsers.add_parser("apigateway", aliases=["api"], help=API_HELP)
-    parser_api.add_argument("command", help=API_COMMAND_HELP, type=str, choices = API_CHOICES)
+# Main function
 
 def main():
+    check_aliases_collisions ()
+    args = build_parser()
+    print(args )
+    # execute_option( args )
 
-    args = buildParser()
-    print('args:')
-    print(args)
+
 
 
 if __name__ == '__main__':

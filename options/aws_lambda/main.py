@@ -1,7 +1,9 @@
 #! /usr/bin/python3
 
+
 from options.aws_lambda import constants
 from options.aws_lambda import commands
+
 
 class LambdaOption:
    
@@ -24,8 +26,11 @@ class LambdaOption:
         return self._cli_aliases
 
     def build_subparser ( self, subparsers ):
-        subparser = subparsers.add_parser( self._option_name, help = self._cli_help, aliases = self._cli_aliases)
-        subparser.add_argument("command", metavar = "COMMAND", help= "yad yada yad", type=str, choices = self._cli_choices)
-	
+        
+        subparser_get_function =  subparsers.add_parser('get-function', help = "To download code in zip file" )
+        subparser_get_function.add_argument('--function-name', type=str, required = True)
+        subparser_get_function.add_argument('--profile', type=str, default = 'default')            
+        
+
     def execute_command ( self, command, args ) :
         commands.run_command( command, args)	
